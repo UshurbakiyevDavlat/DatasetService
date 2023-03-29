@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./_docker/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./:/var/www/
+    container_name: nginx_test
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+  php:
+    build: .
+    container_name: php_test
+    volumes:
+      - ./:/var/www
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8
+    container_name: db_test
+    restart: always
+    environment:
+      MYSQL_DATABASE: csv
+      MYSQL_USER: davlat
+      MYSQL_PASSWORD: qwe1234
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./tmp/db:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

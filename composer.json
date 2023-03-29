@@ -1,0 +1,33 @@
+{
+  "name": "davlatushur/datasetproject",
+  "description": "A service for working with a dataset",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Davlatbek",
+      "email": "dushurbakiev@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.0",
+    "ext-pdo_mysql": "*",
+    "monolog/monolog": "^2.3"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+    ,
+    "phpunit/phpunit": "^9.5",
+    "squizlabs/php_codesniffer": "^3.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "cs-check": "phpcs --standard=PSR12 src/ tests/",
+    "cs-fix": "phpcbf --standard=PSR12 src/ tests/"
+  }
+}

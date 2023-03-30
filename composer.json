@@ -14,7 +14,8 @@
     "ext-pdo_mysql": "*",
     "monolog/monolog": "^2.3",
     "ext-pdo": "*",
-    "vlucas/phpdotenv": "^5.5"
+    "vlucas/phpdotenv": "^5.5",
+    "ext-memcached": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

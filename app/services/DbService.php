@@ -3,6 +3,7 @@
 namespace App\services;
 
 use App\interfaces\IDb;
+use Memcached;
 use PDO;
 use PDOException;
 
@@ -173,7 +174,6 @@ class DbService implements IDb
         }
 
         $stmt->execute();
-
         if ($export) {
             $this->csvService->exportToCsv($stmt);
         }
@@ -181,8 +181,18 @@ class DbService implements IDb
 // Display the records in a table
         echo '<table>';
         echo '<tr><th>ID</th><th>Category</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Gender</th><th>Birth Date</th></tr>';
-        echo "<a class='btn' href='?export=1'> Export to CSV</a>";
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { 
+        $params = [
+            'export' => 1,
+            'gender' => $gender_filter ?? null,
+            'category' => $category_filter ?? null,
+            'birthdate' => $birthdate_filter ?? null,
+            'age_range' => $age_range_filter ?? null,
+            'page' => $current_page ?? null
+        ];
+        $query_string = http_build_query($params);
+        echo "<a class='btn' href='?$query_string'> Export to CSV</a>";
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             echo '<tr>';
             echo '<td>' . htmlspecialchars($row['id']) . '</td>';
             echo '<td>' . htmlspecialchars($row['category']) . '</td>';

@@ -96,7 +96,69 @@ class DbService implements IDb
             echo 'Data inserted successfully' . PHP_EOL;
 
         } else {
-            echo 'Table already has data from csv file';
+            $this->getTableViewPagination();
         }
+    }
+
+    public function getTableViewPagination() {
+
+// Get the current page number
+        $current_page = $_GET['page'] ?? 1;
+
+// Set the number of records to display per page
+        $records_per_page = 10;
+
+        // get the total number of rows
+        $totalRows = $this->pdo->query('SELECT count(*) FROM goods')->fetchColumn();
+
+// calculate the total number of pages
+        $totalPages = ceil($totalRows / $records_per_page);
+
+// Calculate the offset value
+        $offset = ($current_page - 1) * $records_per_page;
+
+// Retrieve the records for the current page
+        $stmt = $this->pdo->prepare('SELECT * FROM goods LIMIT :offset, :limit');
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $records_per_page, PDO::PARAM_INT);
+        $stmt->execute();
+
+// Display the records in a table
+        echo '<table>';
+        echo '<tr><th>ID</th><th>Category</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Gender</th><th>Birth Date</th></tr>';
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            echo '<tr>';
+            echo '<td>' . htmlspecialchars($row['id']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['category']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['firstname']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['lastname']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['email']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['gender']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['birthDate']) . '</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
+
+// display the pagination links
+        echo '<div class="pagination">';
+        if ($totalPages > 1) {
+            $startPage = max(1, $current_page - 5);
+            $endPage = min($totalPages, $current_page + 5);
+            if ($startPage > 1) {
+                echo '<a href="?page=1">1</a> ... ';
+            }
+            for ($i = $startPage; $i <= $endPage; $i++) {
+                if ($i == $current_page) {
+                    echo '<span class="current">' . $i. ' ' . '</span>';
+                } else {
+                    echo '<a href="?page=' . $i . '">' . $i . ' ' . '</a>';
+                }
+            }
+            if ($endPage < $totalPages) {
+                echo ' ... <a href="?page=' . $totalPages . '">' . $totalPages . '</a>';
+            }
+        }
+        echo '</div>';
+
     }
 }

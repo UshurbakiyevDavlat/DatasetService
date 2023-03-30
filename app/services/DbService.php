@@ -100,7 +100,12 @@ class DbService implements IDb
         }
     }
 
-    public function getTableViewPagination() {
+    public function getTableViewPagination(): void
+    {
+        $category_filter = $_GET['category'] ?? null;
+        $gender_filter = $_GET['gender'] ?? null;
+        $birthdate_filter = $_GET['birthdate'] ?? null;
+        $age_range_filter = $_GET['age_range'] ?? null;
 
 // Get the current page number
         $current_page = $_GET['page'] ?? 1;
@@ -117,10 +122,53 @@ class DbService implements IDb
 // Calculate the offset value
         $offset = ($current_page - 1) * $records_per_page;
 
+        $sql = 'SELECT * FROM goods';
+        $where_conditions = [];
+        $params = [];
+
 // Retrieve the records for the current page
-        $stmt = $this->pdo->prepare('SELECT * FROM goods LIMIT :offset, :limit');
+        if (!is_null($category_filter)) {
+            $where_conditions[] = 'category = :category';
+        }
+
+        if (!is_null($gender_filter)) {
+            $where_conditions[] = 'gender = :gender';
+        }
+
+        if (!is_null($birthdate_filter)) {
+            $where_conditions[] = 'birthDate = :birthdate';
+        }
+
+        if (!is_null($age_range_filter)) {
+            $age_range = explode('-', $age_range_filter);
+            $where_conditions[] = 'birthDate BETWEEN DATE_SUB(NOW(), INTERVAL :max_age YEAR) AND DATE_SUB(NOW(), INTERVAL :min_age YEAR)';
+        }
+        if (!empty($where_conditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where_conditions);
+        }
+
+// Prepare the statement and execute it with parameters
+
+        $sql .= ' LIMIT :offset, :limit';
+        $stmt = $this->pdo->prepare($sql);
+
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $records_per_page, PDO::PARAM_INT);
+
+        if (!is_null($category_filter)) {
+            $stmt->bindValue(':category', $category_filter);
+        }
+        if (!is_null($gender_filter)) {
+            $stmt->bindValue(':gender', $gender_filter);
+        }
+        if (!is_null($birthdate_filter)) {
+            $stmt->bindValue(':birthdate', $birthdate_filter);
+        }
+        if (!is_null($age_range_filter)) {
+            $stmt->bindValue(':min_age', $age_range[0]);
+            $stmt->bindValue(':max_age', $age_range[1]);
+        }
+
         $stmt->execute();
 
 // Display the records in a table
@@ -149,7 +197,7 @@ class DbService implements IDb
             }
             for ($i = $startPage; $i <= $endPage; $i++) {
                 if ($i == $current_page) {
-                    echo '<span class="current">' . $i. ' ' . '</span>';
+                    echo '<span class="current">' . $i . ' ' . '</span>';
                 } else {
                     echo '<a href="?page=' . $i . '">' . $i . ' ' . '</a>';
                 }

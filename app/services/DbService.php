@@ -9,6 +9,7 @@ use PDOException;
 class DbService implements IDb
 {
     private PDO $pdo;
+    private CsvService $csvService;
 
     public function __construct()
     {
@@ -18,6 +19,7 @@ class DbService implements IDb
         $password = getenv('DB_PASS');
         $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";
 
+        $this->csvService = new CsvService();
         $this->pdo = new PDO($dsn, $username, $password);
     }
 
@@ -106,6 +108,7 @@ class DbService implements IDb
         $gender_filter = $_GET['gender'] ?? null;
         $birthdate_filter = $_GET['birthdate'] ?? null;
         $age_range_filter = $_GET['age_range'] ?? null;
+        $export = $_GET['export'] ?? null;
 
 // Get the current page number
         $current_page = $_GET['page'] ?? 1;
@@ -171,10 +174,15 @@ class DbService implements IDb
 
         $stmt->execute();
 
+        if ($export) {
+            $this->csvService->exportToCsv($stmt);
+        }
+
 // Display the records in a table
         echo '<table>';
         echo '<tr><th>ID</th><th>Category</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Gender</th><th>Birth Date</th></tr>';
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "<a class='btn' href='?export=1'> Export to CSV</a>";
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) { 
             echo '<tr>';
             echo '<td>' . htmlspecialchars($row['id']) . '</td>';
             echo '<td>' . htmlspecialchars($row['category']) . '</td>';

@@ -1,6 +1,7 @@
 <?php
 
-namespace interfaces;
+namespace App\interfaces;
+
 interface IDb
 {
     public function connect(): void;

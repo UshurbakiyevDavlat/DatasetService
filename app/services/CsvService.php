@@ -1,8 +1,8 @@
 <?php
 
-namespace services;
+namespace App\services;
 
-use interfaces\ICsv;
+use App\interfaces\ICsv;
 
 class CsvService implements ICsv
 {

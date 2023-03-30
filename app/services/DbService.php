@@ -1,8 +1,10 @@
 <?php
 
-namespace services;
+namespace App\services;
 
-use interfaces\IDb;
+use App\interfaces\IDb;
+use PDO;
+use PDOException;
 
 class DbService implements IDb
 {
@@ -11,11 +13,12 @@ class DbService implements IDb
     public function __construct()
     {
         $host = getenv('DB_HOST');
-        $database = getenv('DB_DATABASE');
-        $username = getenv('DB_USERNAME');
-        $password = getenv('DB_PASSWORD');
+        $database = getenv('DB_NAME');
+        $username = getenv('DB_USER');
+        $password = getenv('DB_PASS');
+        $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";
 
-        $this->pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+        $this->pdo = new PDO($dsn, $username, $password);
     }
 
     public function connect(): void

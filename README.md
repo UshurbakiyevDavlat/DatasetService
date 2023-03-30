@@ -43,6 +43,15 @@ To run this project, you will need the following software installed on your mach
 3. Run the command `docker-compose up -d`
 4. Run the command `docker exec php_test composer install`
 
+# Filters
+1. http://localhost/?page=2&gender=male&age_range=10-22&birthdate=20-03-2000
+
+# Flow
+1. Первый раз при заходе идет коннект с базой и создание таблиц, а так же инсертинг
+2. Если инсерт уже произошел, т.е таблица goods не пустая происходит рендеринг таблицы html с пагинацией
+3. Фильтры я описал выше
+4. При нажатии на кнопку экспорт, какой датасет на данный момент имеется с фильтром или без будет экспортирован и скачен в csv формате
+
 # Plan
 
 ## Read CSV file:

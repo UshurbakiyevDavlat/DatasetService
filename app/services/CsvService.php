@@ -8,7 +8,7 @@ class CsvService implements ICsv
 {
     public function readCsv(): array|string
     {
-        $file = fopen('dataset.csv', 'rb');
+        $file = fopen(__DIR__ . '/../../storage/dataset.csv', 'rb');
 
         if ($file !== false) {
             $headers = fgetcsv($file); // Read the headers

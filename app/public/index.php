@@ -11,3 +11,4 @@ foreach ($_ENV as $key => $value) {
 }
 
 $main = new Main();
+$main->run();

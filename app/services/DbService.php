@@ -39,6 +39,7 @@ class DbService implements IDb
                 `category` varchar(255) NOT NULL,
                 `firstname` varchar(255) NOT NULL,
                 `lastname` varchar(255) NOT NULL,
+                `gender` varchar(255) NOT NULL,
                 `email` varchar(255) NOT NULL,
                 `birthDate` varchar(255) NOT NULL,
                 PRIMARY KEY (`id`)
@@ -51,26 +52,51 @@ class DbService implements IDb
 
     public function insertDataFromCsv(array $data): void
     {
-        // Prepare the SQL statement to insert the data
-        $stmt = $this->pdo
-            ->prepare('INSERT INTO goods (category, firstname, lastname, email, gender, birthDate) 
-                            VALUES (:category, :firstname, :lastname, :email, :gender, :birthDate)');
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM goods');
+        $stmt->execute();
+        $count = $stmt->fetchColumn();
 
-// Loop through the data and execute the SQL statement for each row
-        foreach ($data as $row) {
-            try {
-                $stmt->execute([
-                    ':category' => $row['category'],
-                    ':firstname' => $row['firstname'],
-                    ':lastname' => $row['lastname'],
-                    ':email' => $row['email'],
-                    ':gender' => $row['gender'],
-                    ':birthDate' => $row['birthDate']
-                ]);
-            } catch (PDOException $e) {
-                echo 'Error inserting row into database: ' . $e->getMessage();
-                exit();
+        if ($count === '0') {
+            // Prepare the SQL statement to insert the data
+            // Loop through the data and execute the SQL statement for each row
+            // Define the chunk size
+
+            $chunkSize = 500;
+
+            $stmt = $this->pdo
+                ->prepare('INSERT INTO goods (category, firstname, lastname, email, gender, birthDate) 
+                VALUES (:category, :firstname, :lastname, :email, :gender, :birthDate)');
+
+            // Loop through the data in chunks
+            $dataChunks = array_chunk($data, $chunkSize);
+
+            foreach ($dataChunks as $chunk) {
+                $this->pdo->beginTransaction();
+                try {
+                    foreach ($chunk as $row) {
+                        $values = array_map('trim', explode(',', array_values($row)[0]));
+
+                        $stmt->bindValue(':category', $values[0]);
+                        $stmt->bindValue(':firstname', $values[1]);
+                        $stmt->bindValue(':lastname', $values[2]);
+                        $stmt->bindValue(':email', $values[3]);
+                        $stmt->bindValue(':gender', $values[4]);
+                        $stmt->bindValue(':birthDate', $values[5]);
+
+                        $stmt->execute();
+                    }
+                    $this->pdo->commit();
+                } catch (PDOException $e) {
+                    $this->pdo->rollback();
+                    echo 'Error inserting row into database: ' . $e->getMessage();
+                    exit();
+                }
             }
+
+            echo 'Data inserted successfully' . PHP_EOL;
+
+        } else {
+            echo 'Table already has data from csv file';
         }
     }
 }
